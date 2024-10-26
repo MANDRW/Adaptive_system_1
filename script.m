@@ -1,57 +1,91 @@
-% Funkcja wyjściowa
+% Sygnal oryginalny
 N = 500;
 t = linspace(0, 5*pi, N); 
-signal = sin(t); 
-c = sqrt(3);
+signal = 2 * sin(t); % y=2sin(t)
+
+% szum
+c = sqrt(3);% VAR=(c^2)/3, z wariancji
 noise = -c + (c - (-c)) * rand(1, N);
 final = signal + noise;
 
-% Zakres H co 5 jednostek od 5 do 50
-H_v = 5:5:50;  
-mse_values = zeros(1, length(H_v));  % Tablica na wartości MSE
+% Sygnal z szumem
+figure;
+hold on
+plot(t, signal,'-');
+plot(t, final,'.');
+title('Oryginalny sygnał z szumem');
+xlabel('Czas');
+ylabel('Amplituda');
+grid on;
+hold off
 
-% Obliczenie MSE dla każdego H w zakresie H_v
-for i = 1:length(H_v)
-    H = H_v(i);
-    temp = zeros(1, N);          
+% optymalne H wzgledem MSE
+tab_H = 5:1:50;                % H z przedzialu 5-50
+tab_mse = zeros(1, length(tab_H)); 
+
+
+for i = 1:length(tab_H)
+    H = tab_H(i);
+    temp = zeros(1, N);
     for j = 1:N
         if j < H
-            temp(j) = mean(final(1:j)); % Średnia z początkowych próbek
+            temp(j) = mean(final(1:j)); % jezeli ilosc wzcesniejszych punktow <H
         else
-            temp(j) = mean(final(j-H+1:j)); % Średnia ruchoma
-        end
+            temp(j) = mean(final(j-H+1:j));
+        end  
     end
-    estimated_signal = temp;  % Estymowany sygnał dla danego H
-    
-    % Obliczenie MSE dla danego H
-    mse_values(i) = mean((signal - estimated_signal).^2);  % MSE dla danego H
+    estimated_signal = temp;  
+    % mse dla danego H
+    tab_mse(i) = mean((signal - estimated_signal).^2);
 end
 
-% Tworzenie wykresu MSE w funkcji H
+% Wykres MSE dla H
 figure;
-plot(H_v, mse_values, '-o', 'LineWidth', 1.5, 'MarkerSize', 8);
+plot(tab_H, tab_mse, '.-');
 title('Porównanie MSE dla różnych wartości H');
-xlabel('H (Długość okna średniej ruchomej)');
-ylabel('Błąd średniokwadratowy (MSE)');
+xlabel('H');
+ylabel('MSE');
 grid on;
 
-% Dodatkowy krok: wybór H przez użytkownika
-H_user = input('Wprowadź wartość H do wizualizacji (np. 5, 10, 30): ');
+% sygnał dla najlepszego H
+H_best = 10; 
+temp_best = zeros(1, N);
 
-% Wykres dla wybranego przez użytkownika H
-temp_user = zeros(1, N);          
 for j = 1:N
-    if j < H_user
-        temp_user(j) = mean(final(1:j)); % Średnia z początkowych próbek
+    if j < H_best
+        temp_best(j) = mean(final(1:j)); 
     else
-        temp_user(j) = mean(final(j-H_user+1:j)); % Średnia ruchoma
+        temp_best(j) = mean(final(j-H_user+1:j)); 
     end
 end
 
-% Rysowanie estymacji sygnału dla wybranego H przez użytkownika
+% Wykres estymowanego sygnału dla najlepszego H
 figure;
 hold on;
-plot(t, final, '.', 'DisplayName', 'Sygnał zaszumiony');
-plot(t, temp_user, '-', 'DisplayName', ['Estymowany sygnał dla H = ', num2str(H_user)]);
 plot(t, signal, '-', 'DisplayName', 'Sygnał oryginalny');
+plot(t, temp_best, '-', 'DisplayName', 'Estymowany sygnał dla H = 10');
+plot(t, final, '.', 'DisplayName', 'Sygnał zaszumiony');
+title(['Estymacja sygnału dla H = 10']);
+xlabel('Czas');
+ylabel('Amplituda');
+grid on;
 hold off;
+
+% mse od wariancji zaklocen
+tab_var = linspace(0.01, 1, 50);%var od 0.01 do 2
+tab_mse_var = zeros(1, length(tab_var));
+
+for k = 1:length(tab_var)
+    var = tab_var(k);
+    c = sqrt(3 * var);          
+    noise = -c + (c - (-c)) * rand(1, N); 
+    final = signal + noise;           
+    tab_mse_var(k) = mean((signal - final).^2);
+end
+% wykres mse od var
+figure;
+plot(tab_var, tab_mse_var,'.-');
+title('Zależność MSE od wariancji');
+xlabel('VAR');
+ylabel('MSE');
+grid on;
