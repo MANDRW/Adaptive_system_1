@@ -65,7 +65,7 @@ hold on;
 plot(t, signal, '-', 'DisplayName', 'Sygnał oryginalny');
 plot(t, temp_best, '-', 'DisplayName', 'Estymowany sygnał dla H = 10');
 plot(t, final, '.', 'DisplayName', 'Sygnał zaszumiony');
-title(['Estymacja sygnału dla H = 10']);
+title('Estymacja sygnału dla H = 10');
 xlabel('Czas');
 ylabel('Amplituda');
 grid on;
