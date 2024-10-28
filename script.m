@@ -55,7 +55,7 @@ for j = 1:N
     if j < H_best
         temp_best(j) = mean(final(1:j)); 
     else
-        temp_best(j) = mean(final(j-H_user+1:j)); 
+        temp_best(j) = mean(final(j-H_best+1:j)); 
     end
 end
 
@@ -72,7 +72,7 @@ grid on;
 hold off;
 
 % mse od wariancji zaklocen
-tab_var = linspace(0.01, 1, 50);%var od 0.01 do 2
+tab_var = linspace(0.01, 1, 50);%var od 0.01 do 1
 tab_mse_var = zeros(1, length(tab_var));
 
 for k = 1:length(tab_var)
@@ -89,3 +89,4 @@ title('Zależność MSE od wariancji');
 xlabel('VAR');
 ylabel('MSE');
 grid on;
+
